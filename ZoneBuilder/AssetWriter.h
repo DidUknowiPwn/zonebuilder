@@ -6,7 +6,7 @@ class AssetProperty
 {
 public:
 	AssetProperty() { };
-	AssetProperty(int off, int sz, int offNum=-1) : size(sz), offset(off), offsetOfNum(offNum) { 
+	AssetProperty(int off, int sz, int offNum=-1, bool sc=false) : size(sz), offset(off), offsetOfNum(offNum), shortCount(sc) { 
 			doCustomWrite = [](void* a, BUFFER* b) { return false; };
 			getCountCustom = [](void* a) { return -1; };
 		};
@@ -15,6 +15,7 @@ public:
 	int size;
 	int offset;
 	int offsetOfNum;
+	bool shortCount;
 	list<AssetProperty*> children;
 	function<bool(void*, BUFFER*)> doCustomWrite;
 	function<int(void*)> getCountCustom;

@@ -19,7 +19,7 @@ void writeXAnim(zoneInfo_t* info, BUFFER* buf, XAnim* data)
 
 	if(data->delta)
 	{
-		
+		DebugBreak();
 	}
 
 	if(data->dataByte) {

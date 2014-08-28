@@ -18,7 +18,7 @@ enum
 	XFILE_BLOCK_INDEX		= 9,
 };
 
-int zoneStreamSizes[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+int zoneStreamSizes[10];
 
 static AssetWriter* assetWriters;
 
@@ -45,7 +45,7 @@ void addXZoneMemory(int index, int num)
 int writeAsset(zoneInfo_t* info, asset_t* asset, BUFFER* buf)
 {
 	if(asset->written) return asset->offset;
-	asset->offset = buf->tell() + 1; // WHY IS THIS +1 ??????
+	asset->offset = buf->tell() + 1; // WHY IS THIS +1 ?????? -- cuase NTA is retarted with his offset calculation code. even HE has fucking +1
 	// hide the useless assets that we can't change
 	if(asset->type != ASSET_TYPE_TECHSET &&
 	   asset->type != ASSET_TYPE_PIXELSHADER &&
@@ -58,7 +58,8 @@ int writeAsset(zoneInfo_t* info, asset_t* asset, BUFFER* buf)
 		assetWriters[ASSET_TYPE_RAWFILE].write(asset->data, buf);
 		break;
 	case ASSET_TYPE_XANIM:
-		writeXAnim(info, buf, (XAnim*)asset->data);
+		//writeXAnim(info, buf, (XAnim*)asset->data);
+		assetWriters[ASSET_TYPE_XANIM].write(asset->data, buf);
 		break;
 	case ASSET_TYPE_MATERIAL:
 		writeMaterial(info, buf, (Material*)asset->data);
@@ -107,11 +108,14 @@ int writeAsset(zoneInfo_t* info, asset_t* asset, BUFFER* buf)
 
 BUFFER* writeZone(zoneInfo_t * info)
 {
+	// this is rather large but i have no idea if the buffer resize code ever got fixed
     BUFFER* buf = new BUFFER(0x10000000);
     buf->seek(40, SEEK_SET);
 
+	// this defines how all the assets are written
 	assetWriters = createAssetWriters();
 
+	// I should probably use some sort of struct here right?
     buf->write(&info->scriptStringCount, 4, 1);
     if(info->scriptStringCount > 0) buf->write(&pad, 4, 1);
     else buf->write(&zero, 4, 1);
@@ -153,8 +157,8 @@ BUFFER* writeZone(zoneInfo_t * info)
 	zoneStreamSizes[XFILE_BLOCK_VERTEX] = (int)(zoneStreamSizes[XFILE_BLOCK_VERTEX] * 1.2);
 	zoneStreamSizes[XFILE_BLOCK_INDEX] = (int)(zoneStreamSizes[XFILE_BLOCK_INDEX] * 1.2);
 
-    buf->seek(0, SEEK_SET);
-    buf->write(zoneStreamSizes, 40, 1);
+	buf->seek(0, SEEK_SET);
+	buf->write(zoneStreamSizes, 4, 10);
 
 	Com_Debug("\nWrote %d assets, and %d script strings\n", info->assetCount, info->scriptStringCount);
 
